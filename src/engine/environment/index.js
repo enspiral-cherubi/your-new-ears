@@ -11,7 +11,10 @@ import webAudioAnalyser2 from 'web-audio-analyser-2'
 import initFX from './init-fx.js'
 import _ from 'lodash'
 import rand from 'unique-random'
-var mag = require('vectors/mag')(3)
+import ParticleStream from './particle-stream.js'
+import loadParticleTexture from './particle-texture-loader'
+var Tuna = require('tunajs')
+var tuna = new Tuna(audioCtx)
 
 class Environment {
 
@@ -20,11 +23,11 @@ class Environment {
     this.scene = new THREE.Scene()
 
     this.camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.01, 1000)
-    this.camera.position.z = 10
+    this.camera.position.z = 20
 
     this.renderer = new THREE.WebGLRenderer({alpha: true, canvas: $('#three-canvas')[0]})
     this.renderer.setSize(window.innerWidth, window.innerHeight)
-    this.renderer.setClearColor(0xffffff, 1)
+    this.renderer.setClearColor(0x000000, 0)
 
     this.controls = new THREE.FlyControls(this.camera, this.renderer.domElement)
     this.controls.movementSpeed = 0.1
@@ -37,11 +40,12 @@ class Environment {
     this.raycaster.setFromCamera(this.mouse,this.camera)
     this.clicked = null
     this.connections = []
-    this.on = []
+    this.closeBy = []
 
     this.setupAudio()
     this.barkScaleFrequencyData = this.analyser.barkScaleFrequencyData()
     this._makeWidgets()
+    this.particleTexture = loadParticleTexture()
     this._makeParticles()
   }
 
@@ -65,6 +69,11 @@ class Environment {
       this.clicked.rotation.y -= 0.1
     }
 
+    _(this.FX).forEach((FX) => {
+      FX.widget.particleStreams.forEach( (ps) => {ps.updateParticles()})
+    })
+    this.sourceSink.particleStreams.forEach( (ps) => {ps.updateParticles()})
+
 
 
     this.renderer.render(this.scene, this.camera)
@@ -75,7 +84,7 @@ class Environment {
   _makeWidgets () {
     var self = this
     //I use a sphere geometry to arrange the FX boxes
-    var sphere = new THREE.SphereGeometry(5,10,10)
+    var sphere = new THREE.SphereGeometry(15,30,30)
     var locations = sphere.vertices
     var randNumber = rand(0,locations.length)
 
@@ -86,16 +95,10 @@ class Environment {
       FX.widget.clickable = true
       FX.widget.effect = FX
       var pos = randNumber()
-      FX.widget.position.set(locations[pos].x,locations[pos].y,locations[pos].z)
-      FX.widget.flow = function (vector) {
-        //flowing away
-        var flow = vector.sub(FX.widget.position)
-        flow = flow.multiplyScalar(1/magSquared(flow))
-        //the next is a radius cut-off
-        flow = flow.sub(cutoffFlow(vector))
-        return flow
-      }
-      FX.widget.connectedTo = []
+      FX.widget.position.set(locations[pos].x + 2*Math.random(),
+      locations[pos].y+2*Math.random(),
+      locations[pos].z+2*Math.random())
+      FX.widget.particleStreams = []
       self.scene.add(FX.widget)
     })
 
@@ -109,7 +112,8 @@ class Environment {
       //flowing away
       var flow = vector.multiplyScalar(1/magSquared(vector))
     }
-    sourceSink.connectedTo = []
+    sourceSink.particleStreams = []
+    this.sourceSink = sourceSink
     this.scene.add(sourceSink)
 
 
@@ -152,9 +156,46 @@ class Environment {
       console.log('err: ', err)
     })
 
+    var compressor = audioCtx.createDynamicsCompressor()
+    compressor.threshold.value = 80;
+    compressor.knee.value = 80;
+    compressor.ratio.value = 25;
+    compressor.reduction.value = 50;
+    compressor.attack.value = 0;
+    compressor.release.value = 0.25;
+
+    this.filter = new tuna.Filter({
+        frequency: 8000, //20 to 22050
+        Q: 10, //0.001 to 100
+        gain: 20, //-40 to 40
+        filterType: "lowpass", //lowpass, highpass, bandpass, lowshelf, highshelf, peaking, notch, allpass
+        bypass: 0
+    })
+
+    this.filter.connect(compressor)
+
+    compressor.connect(audioCtx.destination)
 
     this.FX = initFX(audioCtx)
 
+  }
+
+  onKeydown (e) {
+    if (e.keyCode == 32){
+      _(this.FX).forEach((fx) => {
+        fx.disconnect()
+        fx.widget.particleStreams.forEach((ps) => {
+          this.scene.remove(ps.particles)
+        })
+      })
+    }
+//keycodes TODO: make into knob turners
+    // 84 71
+    // 89 72
+    // 85 74
+    // 73 75
+    // 79 76
+    // 80 186
   }
 
   onMouseMove (e) {
@@ -169,18 +210,36 @@ class Environment {
     var intersects = this.raycaster.intersectObjects(this.scene.children)
     intersects.forEach(function (i) {
       if (i.object.clickable){
+        console.log(i.object.effect)
         if (self.clicked) {
-          if (i.object.sink){
-            console.log('output!')
-            self.clicked.effect.connect(audioCtx.destination)
-            // particleStream = new particleStream(self.clicked,i.object)
-          } else {
-            if (self.clicked === i.object){
-                self.clicked.effect.disconnect()
+          if (self.clicked === i.object){
+              self.clicked.effect.disconnect()
+              self.clicked.particleStreams.forEach( (ps) => {
+                self.scene.remove(ps.particles)
+              })
+              self.clicked.particleStreams = []
+          } else{
+            if (i.object.sink){
+              self.clicked.effect.connect(self.filter)
+              var particleStream = new ParticleStream(self.clicked,i.object,self.particleTexture)
+              self.clicked.particleStreams.push(particleStream)
+              self.scene.add(particleStream.particles)
+              console.log(particleStream.particles)
             } else {
-              self.clicked.effect.connect(i.object.effect)
-            }
+              if (self.clicked === i.object){
+                  self.clicked.effect.disconnect()
+                  self.clicked.particleStreams.forEach( (ps) => {
+                    self.scene.remove(ps.particles)
+                  })
+                  self.clicked.particleStreams = []
+              } else {
+                self.clicked.effect.connect(i.object.effect)
+                var particleStream = new ParticleStream(self.clicked,i.object,self.particleTexture)
+                self.clicked.particleStreams.push(particleStream)
+                self.scene.add(particleStream.particles)
+              }
           }
+        }
           self.clicked = null
         } else {
           self.clicked = i.object
@@ -189,14 +248,7 @@ class Environment {
     })
   }
 
-  cutoffFlow (vector) {
-    var magSquare = magSquared(vector)
-    return vector.multiplyScalar(-0.01*magSquare*magSquare)
-  }
 
-  magSquared (vector) {
-    return vector.x*vector.x+vector.y*vector.y+vector.z*vector.z
-  }
 
   _updateParticles () {
     this.particles.forEach(function (particle) {
@@ -204,10 +256,10 @@ class Environment {
       particle.position.addScaledVector(flow,0.1)
       var distanceToSink = magSquared(particle.position.sub(particle.to.position))
       if (distanceToSink<1) {
-        if (particle.to.connectedTo.length>0){
+        if (particle.to.particleStreams.length>0){
           //send particle to next box when it gets close to its destination
-          var randNumber = rand(0,particle.to.connectedTo.length)
-          particle.to = particle.to.connectedTo[randNumber]
+          var randNumber = rand(0,particle.to.particleStreams.length)
+          particle.to = particle.to.particleStreams[randNumber]
         }
       }
     })
