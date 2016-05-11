@@ -22,6 +22,7 @@ class ParticleStream {
     this.source = source
     this.to = to
     this.connected = false
+    this.disconnecting = false
   }
 
   //can take audio input later
@@ -51,11 +52,21 @@ class ParticleStream {
   flow (vector) {
     var flow = new THREE.Vector3()
     flow.copy(vector)
-    flow.sub(this.source.position)
-    flow.multiplyScalar(1/this.magSquared(flow))
-    flow.addScaledVector(this.to.position,4/this.distSquared(this.to.position,vector))
-    flow.addScaledVector(vector,-4/this.distSquared(this.to.position,vector))
+    if (this.disconnecting){
+      flow.multiplyScalar(10/this.magSquared(flow))
+      flow.addScaledVector(this.source.position,1/this.distSquared(this.source.position,vector))
+      flow.addScaledVector(this.to.position,1/this.distSquared(this.to.position,vector))
+    } else {
+        flow.sub(this.source.position)
+        flow.multiplyScalar(1/this.magSquared(flow))
+        flow.addScaledVector(this.to.position,4/this.distSquared(this.to.position,vector))
+        flow.addScaledVector(vector,-4/this.distSquared(this.to.position,vector))
+    }
     return flow
+  }
+
+  disconnect () {
+      this.disconnecting = true
   }
 
 

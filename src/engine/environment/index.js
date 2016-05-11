@@ -203,7 +203,7 @@ class Environment {
       _(this.FX).forEach((fx) => {
         fx.disconnect()
         fx.widget.particleStreams.forEach((ps) => {
-          this.scene.remove(ps.particles)
+          ps.disconnect()
         })
       })
     }
@@ -217,7 +217,6 @@ class Environment {
   }
 
   onMouseMove (e) {
-    // e.preventDefault()
 
     this.mouse.x = (e.clientX/window.innerWidth)*2-1
     this.mouse.y = -(e.clientY/window.innerHeight)*2+1
@@ -233,27 +232,22 @@ class Environment {
           if (self.clicked === i.object){
               self.clicked.effect.disconnect()
               self.clicked.particleStreams.forEach( (ps) => {
-                self.scene.remove(ps.particles)
+                ps.disconnect()
               })
-              self.clicked.particleStreams = []
           } else{
             if (i.object.sink){
-              // self.clicked.effect.connect(self.filter)
               var particleStream = new ParticleStream(self.clicked,i.object,self.particleTexture)
               self.clicked.particleStreams.push(particleStream)
               self.scene.add(particleStream.particles)
-              console.log(particleStream.particles)
             } else {
               if (self.clicked === i.object){
                   self.clicked.effect.disconnect()
                   self.clicked.particleStreams.forEach( (ps) => {
-                    self.scene.remove(ps.particles)
+                    ps.disconnect()
                   })
-                  self.clicked.particleStreams = []
               } else {
                 i.object.scale.set(2,2,2)
                 i.object.growing = 50
-                // self.clicked.effect.connect(i.object.effect)
                 var particleStream = new ParticleStream(self.clicked,i.object,self.particleTexture)
                 self.clicked.particleStreams.push(particleStream)
                 self.scene.add(particleStream.particles)
