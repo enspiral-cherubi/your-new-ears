@@ -5,8 +5,6 @@ import THREEFlyControls from 'three-fly-controls'
 THREEFlyControls(THREE)
 import WindowResize from 'three-window-resize'
 var audioCtx = new (window.AudioContext || window.webkitAudioContext)
-// import GetMic from './get-mic.js'
-// var getMic = GetMic(audioCtx)
 var $micSelector = require('mic-selector')(audioCtx)
 import webAudioAnalyser2 from 'web-audio-analyser-2'
 import initFX from './init-fx.js'
@@ -149,13 +147,7 @@ class Environment {
     })
     var self = this
 
-    // getMic(audioCtx)
-    // .then(function (microphone) {
-    //   microphone.connect(self.analyser)
-    // })
-    // .fail(function (err) {
-    //   console.log('err: ', err)
-    // })
+
 
     $micSelector.on('bang', function (e, node) {
       node.connect(self.analyser)
