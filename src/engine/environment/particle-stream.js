@@ -1,9 +1,9 @@
 import THREE from 'three'
-
+import webAudioAnalyser2 from 'web-audio-analyser-2'
 
 class ParticleStream {
 
-  constructor (source,to,texture) {
+  constructor (source,to,texture,context) {
     var particles = 2000
 
     var geometry = new THREE.Geometry()
@@ -18,6 +18,11 @@ class ParticleStream {
     // this.particles.material.map = texture
 
 
+    this.analyser = webAudioAnalyser2({
+      context: context,
+      fftSize: 2048,
+      equalTemperedFreqBinCount: 10
+    })
 
     this.source = source
     this.to = to
@@ -27,6 +32,7 @@ class ParticleStream {
 
   //can take audio input later
   updateParticles () {
+      this.particles.material.size = 0.1*Math.tanh(this.analyser.barkScaleFrequencyData().overallAmplitude/100)+0.1
       this.particles.geometry.vertices.forEach(  (p) => {
           p.addScaledVector(this.flow(p),0.1)
           if (this.distSquared(p,this.to.position)<1){
@@ -35,11 +41,14 @@ class ParticleStream {
             ( Math.random() - 1/2 ) + this.source.position.y,
             ( Math.random() - 1/2 ) + this.source.position.z)
 
+
             if (!this.connected) {
               if(this.to.sink){
-                this.source.effect.connect(this.to.sink)
+                this.source.effect.connect(this.analyser)
+                this.analyser.connect(this.to.sink)
               } else {
-                this.source.effect.connect(this.to.effect)
+                this.source.effect.connect(this.analyser)
+                this.analyser.connect(this.to.effect)
               }
               this.connected = true
             }

@@ -206,6 +206,8 @@ class Environment {
           ps.disconnect()
         })
       })
+      this.analyser.disconnect()
+      this.sourceSink.particleStreams.forEach((ps) => {ps.disconnect()})
     }
 //keycodes TODO: make into knob turners
     // 84 71
@@ -236,7 +238,7 @@ class Environment {
               })
           } else{
             if (i.object.sink){
-              var particleStream = new ParticleStream(self.clicked,i.object,self.particleTexture)
+              var particleStream = new ParticleStream(self.clicked,i.object,self.particleTexture,audioCtx)
               self.clicked.particleStreams.push(particleStream)
               self.scene.add(particleStream.particles)
             } else {
@@ -248,7 +250,7 @@ class Environment {
               } else {
                 i.object.scale.set(2,2,2)
                 i.object.growing = 50
-                var particleStream = new ParticleStream(self.clicked,i.object,self.particleTexture)
+                var particleStream = new ParticleStream(self.clicked,i.object,self.particleTexture,audioCtx)
                 self.clicked.particleStreams.push(particleStream)
                 self.scene.add(particleStream.particles)
               }
