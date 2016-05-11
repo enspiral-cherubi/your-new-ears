@@ -21,6 +21,7 @@ class ParticleStream {
 
     this.source = source
     this.to = to
+    this.connected = false
   }
 
   //can take audio input later
@@ -32,6 +33,15 @@ class ParticleStream {
             p.set(( Math.random() - 1/2 ) + this.source.position.x,
             ( Math.random() - 1/2 ) + this.source.position.y,
             ( Math.random() - 1/2 ) + this.source.position.z)
+
+            if (!this.connected) {
+              if(this.to.sink){
+                this.source.effect.connect(this.to.sink)
+              } else {
+                this.source.effect.connect(this.to.effect)
+              }
+              this.connected = true
+            }
           }
       }
     )

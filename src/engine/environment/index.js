@@ -50,6 +50,15 @@ class Environment {
 
   render () {
     this.barkScaleFrequencyData = this.analyser.barkScaleFrequencyData()
+    for (var i = 0; i < 24; i++){
+      var amplitude = Math.sin(this.barkScaleFrequencyData.frequencies[i])
+      this.analyserGeometry.vertices[2*i].add(new THREE.Vector3((Math.random()-0.5)*amplitude,
+      (Math.random()-0.5)*amplitude,
+      (Math.random()-0.5)*amplitude))
+      this.analyserGeometry.vertices[2*i].multiplyScalar(0.99)
+    }
+    this.analyserGeometry.verticesNeedUpdate = true
+
 
     //find intersections
     this.camera.lookAt(this.scene.position)
@@ -69,7 +78,14 @@ class Environment {
     }
 
     _(this.FX).forEach((FX) => {
-      FX.widget.particleStreams.forEach( (ps) => {ps.updateParticles()})
+      FX.widget.particleStreams.forEach( (ps) => {
+        ps.updateParticles()
+      })
+      if (FX.widget.growing>0) {
+        var growing = FX.widget.growing
+        FX.widget.scale.set(1+growing/50,1+growing/50,1+growing/50)
+        FX.widget.growing-=1
+      }
     })
     this.sourceSink.particleStreams.forEach( (ps) => {ps.updateParticles()})
 
@@ -101,11 +117,13 @@ class Environment {
       self.scene.add(FX.widget)
     })
 
-    var geometry = new THREE.SphereGeometry(1,5,2)
+    this.analyserGeometry = new THREE.SphereGeometry(1,6,6)
+    this.analyserGeometry.dynamic = true
+    console.log(this.analyserGeometry.vertices.length)
     var material = new THREE.MeshNormalMaterial()
-    var sourceSink = new THREE.Mesh(geometry,material)
+    var sourceSink = new THREE.Mesh(this.analyserGeometry,material)
     sourceSink.effect = this.analyser
-    sourceSink.sink = true
+    sourceSink.sink = this.filter
     sourceSink.clickable = true
     sourceSink.flow = function (vector) {
       //flowing away
@@ -220,7 +238,7 @@ class Environment {
               self.clicked.particleStreams = []
           } else{
             if (i.object.sink){
-              self.clicked.effect.connect(self.filter)
+              // self.clicked.effect.connect(self.filter)
               var particleStream = new ParticleStream(self.clicked,i.object,self.particleTexture)
               self.clicked.particleStreams.push(particleStream)
               self.scene.add(particleStream.particles)
@@ -233,7 +251,9 @@ class Environment {
                   })
                   self.clicked.particleStreams = []
               } else {
-                self.clicked.effect.connect(i.object.effect)
+                i.object.scale.set(2,2,2)
+                i.object.growing = 50
+                // self.clicked.effect.connect(i.object.effect)
                 var particleStream = new ParticleStream(self.clicked,i.object,self.particleTexture)
                 self.clicked.particleStreams.push(particleStream)
                 self.scene.add(particleStream.particles)
