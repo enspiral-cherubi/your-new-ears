@@ -225,11 +225,11 @@ class Environment {
   }
 
   onMouseDown (e) {
+    var notClicked = true
     var self = this
     var intersects = this.raycaster.intersectObjects(this.scene.children)
     intersects.forEach(function (i) {
-      if (i.object.clickable){
-        console.log(i.object.effect)
+      if (i.object.clickable && notClicked){
         if (self.clicked) {
           if (self.clicked === i.object){
               self.clicked.effect.disconnect()
@@ -260,6 +260,7 @@ class Environment {
         } else {
           self.clicked = i.object
         }
+        notClicked = false
       }
     })
   }
