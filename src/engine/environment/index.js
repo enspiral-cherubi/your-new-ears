@@ -5,8 +5,9 @@ import THREEFlyControls from 'three-fly-controls'
 THREEFlyControls(THREE)
 import WindowResize from 'three-window-resize'
 var audioCtx = new (window.AudioContext || window.webkitAudioContext)
-import GetMic from './get-mic.js'
-var getMic = GetMic(audioCtx)
+// import GetMic from './get-mic.js'
+// var getMic = GetMic(audioCtx)
+var $micSelector = require('mic-selector')(audioCtx)
 import webAudioAnalyser2 from 'web-audio-analyser-2'
 import initFX from './init-fx.js'
 import _ from 'lodash'
@@ -148,13 +149,20 @@ class Environment {
     })
     var self = this
 
-    getMic(audioCtx)
-    .then(function (microphone) {
-      microphone.connect(self.analyser)
+    // getMic(audioCtx)
+    // .then(function (microphone) {
+    //   microphone.connect(self.analyser)
+    // })
+    // .fail(function (err) {
+    //   console.log('err: ', err)
+    // })
+
+    $micSelector.on('bang', function (e, node) {
+      node.connect(self.analyser)
     })
-    .fail(function (err) {
-      console.log('err: ', err)
-    })
+
+    $('body').append($micSelector)
+    $micSelector.css('position','absolute')
 
     var compressor = audioCtx.createDynamicsCompressor()
     compressor.threshold.value = 80;
@@ -199,7 +207,7 @@ class Environment {
   }
 
   onMouseMove (e) {
-    e.preventDefault()
+    // e.preventDefault()
 
     this.mouse.x = (e.clientX/window.innerWidth)*2-1
     this.mouse.y = -(e.clientY/window.innerHeight)*2+1
