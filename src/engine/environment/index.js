@@ -50,6 +50,15 @@ class Environment {
 
   render () {
     this.barkScaleFrequencyData = this.analyser.barkScaleFrequencyData()
+    for (var i = 0; i < 24; i++){
+      var amplitude = Math.sin(this.barkScaleFrequencyData.frequencies[i])
+      this.analyserGeometry.vertices[2*i].add(new THREE.Vector3((Math.random()-0.5)*amplitude,
+      (Math.random()-0.5)*amplitude,
+      (Math.random()-0.5)*amplitude))
+      this.analyserGeometry.vertices[2*i].multiplyScalar(0.99)
+    }
+    this.analyserGeometry.verticesNeedUpdate = true
+
 
     //find intersections
     this.camera.lookAt(this.scene.position)
@@ -69,7 +78,14 @@ class Environment {
     }
 
     _(this.FX).forEach((FX) => {
-      FX.widget.particleStreams.forEach( (ps) => {ps.updateParticles()})
+      FX.widget.particleStreams.forEach( (ps) => {
+        ps.updateParticles()
+      })
+      if (FX.widget.growing>0) {
+        var growing = FX.widget.growing
+        FX.widget.scale.set(1+growing/50,1+growing/50,1+growing/50)
+        FX.widget.growing-=1
+      }
     })
     this.sourceSink.particleStreams.forEach( (ps) => {ps.updateParticles()})
 
@@ -101,11 +117,13 @@ class Environment {
       self.scene.add(FX.widget)
     })
 
-    var geometry = new THREE.SphereGeometry(1,5,2)
+    this.analyserGeometry = new THREE.SphereGeometry(1,6,6)
+    this.analyserGeometry.dynamic = true
+    console.log(this.analyserGeometry.vertices.length)
     var material = new THREE.MeshNormalMaterial()
-    var sourceSink = new THREE.Mesh(geometry,material)
+    var sourceSink = new THREE.Mesh(this.analyserGeometry,material)
     sourceSink.effect = this.analyser
-    sourceSink.sink = true
+    sourceSink.sink = this.filter
     sourceSink.clickable = true
     sourceSink.flow = function (vector) {
       //flowing away
@@ -185,9 +203,11 @@ class Environment {
       _(this.FX).forEach((fx) => {
         fx.disconnect()
         fx.widget.particleStreams.forEach((ps) => {
-          this.scene.remove(ps.particles)
+          ps.disconnect()
         })
       })
+      this.analyser.disconnect()
+      this.sourceSink.particleStreams.forEach((ps) => {ps.disconnect()})
     }
 //keycodes TODO: make into knob turners
     // 84 71
@@ -199,42 +219,38 @@ class Environment {
   }
 
   onMouseMove (e) {
-    // e.preventDefault()
 
     this.mouse.x = (e.clientX/window.innerWidth)*2-1
     this.mouse.y = -(e.clientY/window.innerHeight)*2+1
   }
 
   onMouseDown (e) {
+    var notClicked = true
     var self = this
     var intersects = this.raycaster.intersectObjects(this.scene.children)
     intersects.forEach(function (i) {
-      if (i.object.clickable){
-        console.log(i.object.effect)
+      if (i.object.clickable && notClicked){
         if (self.clicked) {
           if (self.clicked === i.object){
               self.clicked.effect.disconnect()
               self.clicked.particleStreams.forEach( (ps) => {
-                self.scene.remove(ps.particles)
+                ps.disconnect()
               })
-              self.clicked.particleStreams = []
           } else{
             if (i.object.sink){
-              self.clicked.effect.connect(self.filter)
-              var particleStream = new ParticleStream(self.clicked,i.object,self.particleTexture)
+              var particleStream = new ParticleStream(self.clicked,i.object,self.particleTexture,audioCtx)
               self.clicked.particleStreams.push(particleStream)
               self.scene.add(particleStream.particles)
-              console.log(particleStream.particles)
             } else {
               if (self.clicked === i.object){
                   self.clicked.effect.disconnect()
                   self.clicked.particleStreams.forEach( (ps) => {
-                    self.scene.remove(ps.particles)
+                    ps.disconnect()
                   })
-                  self.clicked.particleStreams = []
               } else {
-                self.clicked.effect.connect(i.object.effect)
-                var particleStream = new ParticleStream(self.clicked,i.object,self.particleTexture)
+                i.object.scale.set(2,2,2)
+                i.object.growing = 50
+                var particleStream = new ParticleStream(self.clicked,i.object,self.particleTexture,audioCtx)
                 self.clicked.particleStreams.push(particleStream)
                 self.scene.add(particleStream.particles)
               }
@@ -244,6 +260,7 @@ class Environment {
         } else {
           self.clicked = i.object
         }
+        notClicked = false
       }
     })
   }
