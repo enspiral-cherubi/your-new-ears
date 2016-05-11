@@ -14,20 +14,27 @@ import rand from 'unique-random'
 
 class Environment {
 
+
   constructor () {
     this.scene = new THREE.Scene()
 
     this.camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.01, 1000)
     this.camera.position.z = 10
 
-
     this.renderer = new THREE.WebGLRenderer({alpha: true, canvas: $('#three-canvas')[0]})
     this.renderer.setSize(window.innerWidth, window.innerHeight)
     this.renderer.setClearColor(0xffffff, 1)
 
     this.controls = new THREE.FlyControls(this.camera, this.renderer.domElement)
+    this.controls.movementSpeed = 0.1
 
     var windowResize = new WindowResize(this.renderer, this.camera)
+
+    this.mouse = new THREE.Vector2(0,0)
+
+    this.raycaster = new THREE.Raycaster()
+    this.raycaster.setFromCamera(this.mouse,this.camera)
+    this.clicked = []
 
     this.setupAudio()
     this.barkScaleFrequencyData = this.analyser.barkScaleFrequencyData()
@@ -36,7 +43,23 @@ class Environment {
 
   render () {
     this.barkScaleFrequencyData = this.analyser.barkScaleFrequencyData()
-    // this._updateCube()
+
+    //find intersections
+    this.camera.lookAt(this.scene.position)
+    this.camera.updateMatrixWorld()
+    this.raycaster.setFromCamera(this.mouse,this.camera)
+    var intersects = this.raycaster.intersectObjects(this.scene.children)
+    intersects.forEach(function (i) {
+      i.object.rotation.x += .01
+      i.object.rotation.y += .01
+    })
+  //   for ( var i = 0; i < intersects.length; i++ ) {
+  //
+	// 	intersects[ i ].object.material.color.set( 0xff0000 );
+  //
+	// }
+
+
     this.renderer.render(this.scene, this.camera)
   }
 
@@ -53,6 +76,7 @@ class Environment {
       var geometry = new THREE.BoxGeometry(1,1,1)
       var material = new THREE.MeshNormalMaterial()
       FX.widget = new THREE.Mesh(geometry, material)
+      FX.widget.effect = FX
       var pos = randNumber()
       FX.widget.position.set(locations[pos].x,locations[pos].y,locations[pos].z)
       self.scene.add(FX.widget)
@@ -83,9 +107,23 @@ class Environment {
 
   }
 
+  onMouseMove (e) {
+    e.preventDefault()
+
+    this.mouse.x = (e.clientX/window.innerWidth)*2-1
+    this.mouse.y = -(e.clientY/window.innerHeight)*2+1
+  }
+
+  onMouseDown (e) {
+
+    var intersects = this.raycaster.intersectObjects(this.scene.children)
+    intersects.forEach(function (i) {
+      console.log(i.object.effect)
+    })
+  }
+
   _updateCube () {
-    this.cube.rotation.x += 0.1
-		this.cube.rotation.y += 0.1
+
   }
 
 }
