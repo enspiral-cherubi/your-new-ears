@@ -2,6 +2,8 @@
 
 run mic sound through audio effects
 
+*!!press spacebar to stop feedback loops!!*
+
 ### install
 
 ```
