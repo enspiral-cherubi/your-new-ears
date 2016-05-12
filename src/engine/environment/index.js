@@ -331,7 +331,7 @@ class Environment {
 
     rotateSelections () {
       //find intersections
-      this.camera.lookAt(this.scene.position)
+      // this.camera.lookAt(this.scene.position)
       this.camera.updateMatrixWorld()
       this.raycaster.setFromCamera(this.mouse,this.camera)
       var intersects = this.raycaster.intersectObjects(this.scene.children)
