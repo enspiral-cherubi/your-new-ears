@@ -59,6 +59,7 @@ class Environment {
 
     this.barkScaleFrequencyData = this.analyser.barkScaleFrequencyData()
 
+
     this.updateAnalyser()
 
     this.rotateSelections()
@@ -311,6 +312,10 @@ class Environment {
     updateParticleStreams () {
       _(this.FX).forEach((FX) => {
         FX.widget.particleStreams.forEach( (ps) => {
+          if(!ps.disconnecting && ps.explode()){
+            FX.disconnect()
+            FX.widget.particleStreams.forEach( (p) => {p.disconnect()})
+          }
           ps.updateParticles()
         })
       })
