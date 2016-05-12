@@ -14,11 +14,16 @@ import ParticleStream from './particle-stream.js'
 import loadParticleTexture from './particle-texture-loader'
 var Tuna = require('tunajs')
 var tuna = new Tuna(audioCtx)
+import hud from './../hud'
+import vmath from './services/vector-math.js'
 
 class Environment {
 
 
   constructor () {
+
+    hud.init(this)
+
     this.scene = new THREE.Scene()
 
     this.camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.01, 1000)
@@ -49,10 +54,10 @@ class Environment {
   }
 
   render () {
+
     this.barkScaleFrequencyData = this.analyser.barkScaleFrequencyData()
 
     this.updateAnalyser()
-
 
     this.rotateSelections()
 
@@ -60,7 +65,27 @@ class Environment {
 
     this.swell()
 
+    this.updatehud()
+
     this.renderer.render(this.scene, this.camera)
+  }
+
+  updatehud () {
+    var closestObject = null
+    var dist = 9
+    _(this.FX).forEach((FX) => {
+      var newDist = vmath.distSquared(FX.widget.position,this.camera.position)
+      if (newDist<dist) {
+        closestObject = FX
+        dist = newDist
+      } else {
+        hud.hideControls(FX)
+      }
+    })
+
+    if (closestObject) {
+      hud.showControls(closestObject)
+    }
   }
 
 
@@ -294,6 +319,7 @@ class Environment {
         if (i.object.clickable){
           i.object.rotation.x += .01
           i.object.rotation.y += .01
+
         }
       })
 
@@ -302,6 +328,8 @@ class Environment {
         this.clicked.rotation.y -= 0.1
       }
     }
+
+
 
 }
 
