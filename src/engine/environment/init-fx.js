@@ -5,6 +5,7 @@ module.exports =
     var tuna = new Tuna(audioCtx)
 
     var chorus = new tuna.Chorus({
+      name: 'chorus',
       rate: 1.5,
       feedback: 0.2,
       delay: 0.0045,
@@ -24,6 +25,7 @@ module.exports =
     ]
 
     var delay = new tuna.Delay({
+      name: 'delay',
       feedback: 0.45,
       delayTime: 150,
       wetLevel: 0.25,
@@ -50,6 +52,7 @@ module.exports =
 
 
     var phaser = new tuna.Phaser({
+      name: 'phaser',
       rate: 1.2,                     //0.01 to 8 is a decent range, but higher values are possible
       depth: 0.3,                    //0 to 1
       feedback: 0.2,                 //0 to 1+
@@ -84,6 +87,7 @@ module.exports =
     // })
 
     var compressor = new tuna.Compressor({
+      name: 'compressor',
       threshold: 0.5,    //-100 to 0
       makeupGain: 1,     //0 and up
       attack: 1,         //0 to 1000
@@ -122,6 +126,7 @@ module.exports =
   // })
 
   var filter = new tuna.Filter({
+      name: 'low pass filter',
       frequency: 440, //20 to 22050
       Q: 1, //0.001 to 100
       gain: 0, //-40 to 40
@@ -149,6 +154,7 @@ module.exports =
 
 
   var tremolo = new tuna.Tremolo({
+      name: 'tremolo',
       intensity: 0.3,    //0 to 1
       rate: 4,         //0.001 to 8
       stereoPhase: 0,    //0 to 180
@@ -170,6 +176,7 @@ module.exports =
 
 
   var wahwah = new tuna.WahWah({
+      name: 'wahwah',
       automode: true,                //true/false
       baseFrequency: 0.5,            //0 to 1
       excursionOctaves: 2,           //1 to 6
@@ -199,6 +206,7 @@ module.exports =
 
 
   var moog = new tuna.MoogFilter({
+      name: 'moog filter',
       cutoff: 0.065,    //0 to 1
       resonance: 3.5,   //0 to 4
       bufferSize: 4096  //256 to 16384
@@ -216,6 +224,7 @@ module.exports =
 
 
   var pingPongDelay = new tuna.PingPongDelay({
+      name: 'ping pong delay',
       wetLevel: 0.5, //0 to 1
       feedback: 0.3, //0 to 1
       delayTimeLeft: 150, //1 to 10000 (milliseconds)

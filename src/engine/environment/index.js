@@ -116,10 +116,10 @@ class Environment {
 
     this.analyserGeometry = new THREE.SphereGeometry(1,6,6)
     this.analyserGeometry.dynamic = true
-    console.log(this.analyserGeometry.vertices.length)
     var material = new THREE.MeshNormalMaterial()
     var sourceSink = new THREE.Mesh(this.analyserGeometry,material)
     sourceSink.effect = this.analyser
+    this.analyser.name = 'Source // Sink'
     sourceSink.sink = this.filter
     sourceSink.clickable = true
     sourceSink.flow = function (vector) {
@@ -276,7 +276,6 @@ class Environment {
     if (closestObject) {
       var knobVals = closestObject.knobs.map((k) => {return k.getValue()})
       closestObject.turn(knobVals)
-      console.log('meow')
     }
   }
 
@@ -339,7 +338,7 @@ class Environment {
         if (i.object.clickable){
           i.object.rotation.x += .01
           i.object.rotation.y += .01
-
+          $('div.effect-label').html('<font size=12>' + i.object.effect.name + '</font>')
         }
       })
 
