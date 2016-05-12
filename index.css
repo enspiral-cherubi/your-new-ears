@@ -30,3 +30,25 @@ html, body {
   font-size: 18px;
   font-weight: 300;
 }
+
+#effect-label {
+  position: absolute;
+  bottom: 5px;
+  right: 15px;
+  z-index: 1000;
+}
+
+#warning {
+  position: absolute;
+  top: 5px;
+  right: 15px;
+  z-index: 1000;
+  opacity: 0.1;
+}
+
+#knob-container {
+  position: absolute;
+  bottom: 5px;
+  left: 15px;
+  z-index: 1000;
+}

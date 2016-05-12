@@ -57,6 +57,8 @@ class ParticleStream {
       }
     )
     this.particles.geometry.verticesNeedUpdate = true
+    this.particles.geometry.computeBoundingSphere()
+    // this.particles.geometry.normalize()
   }
 
   flow (vector) {
