@@ -50,49 +50,19 @@ class Environment {
 
   render () {
     this.barkScaleFrequencyData = this.analyser.barkScaleFrequencyData()
-    for (var i = 0; i < 24; i++){
-      var amplitude = Math.sin(this.barkScaleFrequencyData.frequencies[i])
-      this.analyserGeometry.vertices[2*i].add(new THREE.Vector3((Math.random()-0.5)*amplitude,
-      (Math.random()-0.5)*amplitude,
-      (Math.random()-0.5)*amplitude))
-      this.analyserGeometry.vertices[2*i].multiplyScalar(0.99)
-    }
-    this.analyserGeometry.verticesNeedUpdate = true
+
+    this.updateAnalyser()
 
 
-    //find intersections
-    this.camera.lookAt(this.scene.position)
-    this.camera.updateMatrixWorld()
-    this.raycaster.setFromCamera(this.mouse,this.camera)
-    var intersects = this.raycaster.intersectObjects(this.scene.children)
-    intersects.forEach(function (i) {
-      if (i.object.clickable){
-        i.object.rotation.x += .01
-        i.object.rotation.y += .01
-      }
-    })
+    this.rotateSelections()
 
-    if (this.clicked) {
-      this.clicked.rotation.x -= 0.1
-      this.clicked.rotation.y -= 0.1
-    }
+    this.updateParticleStreams()
 
-    _(this.FX).forEach((FX) => {
-      FX.widget.particleStreams.forEach( (ps) => {
-        ps.updateParticles()
-      })
-      if (FX.widget.growing>0) {
-        var growing = FX.widget.growing
-        FX.widget.scale.set(1+growing/50,1+growing/50,1+growing/50)
-        FX.widget.growing-=1
-      }
-    })
-    this.sourceSink.particleStreams.forEach( (ps) => {ps.updateParticles()})
-
-
+    this.swell()
 
     this.renderer.render(this.scene, this.camera)
   }
+
 
   // 'private'
 
@@ -281,6 +251,57 @@ class Environment {
       }
     })
   }
+
+
+    swell () {
+      _(this.FX).forEach((FX) => {
+        if (FX.widget.growing>0) {
+          var growing = FX.widget.growing
+          FX.widget.scale.set(1+growing/50,1+growing/50,1+growing/50)
+          FX.widget.growing-=1
+        }
+      })
+    }
+
+    updateParticleStreams () {
+      _(this.FX).forEach((FX) => {
+        FX.widget.particleStreams.forEach( (ps) => {
+          ps.updateParticles()
+        })
+      })
+
+      this.sourceSink.particleStreams.forEach( (ps) => {ps.updateParticles()})
+    }
+
+    updateAnalyser () {
+      for (var i = 0; i < 24; i++){
+        var amplitude = Math.sin(this.barkScaleFrequencyData.frequencies[i])
+        this.analyserGeometry.vertices[2*i].add(new THREE.Vector3((Math.random()-0.5)*amplitude,
+        (Math.random()-0.5)*amplitude,
+        (Math.random()-0.5)*amplitude))
+        this.analyserGeometry.vertices[2*i].multiplyScalar(0.99)
+      }
+      this.analyserGeometry.verticesNeedUpdate = true
+    }
+
+    rotateSelections () {
+      //find intersections
+      this.camera.lookAt(this.scene.position)
+      this.camera.updateMatrixWorld()
+      this.raycaster.setFromCamera(this.mouse,this.camera)
+      var intersects = this.raycaster.intersectObjects(this.scene.children)
+      intersects.forEach(function (i) {
+        if (i.object.clickable){
+          i.object.rotation.x += .01
+          i.object.rotation.y += .01
+        }
+      })
+
+      if (this.clicked) {
+        this.clicked.rotation.x -= 0.1
+        this.clicked.rotation.y -= 0.1
+      }
+    }
 
 }
 
