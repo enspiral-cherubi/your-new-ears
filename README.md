@@ -1,6 +1,8 @@
 ## your-new-ears
 
-run mic sound through audio effects
+Run (eg. microphone) sound through audio effects. The effects chain in represented as a 3d sound refractor reactor.
+
+
 
 _*!!press spacebar to stop feedback loops!!*_
 
