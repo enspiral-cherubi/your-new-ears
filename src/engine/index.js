@@ -15,6 +15,7 @@ class Engine {
     $(window).on('mousemove',this.environment.onMouseMove.bind(this.environment))
     $(window).on('click',this.environment.onMouseDown.bind(this.environment))
     $(window).on('keydown',this.environment.onKeydown.bind(this.environment))
+    $(window).on('mouseup',this.environment.onMouseUp.bind(this.environment))
     $(window).load(this.view.closeLoadingScreen)
   }
 

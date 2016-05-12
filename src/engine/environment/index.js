@@ -52,7 +52,7 @@ class Environment {
     this._makeParticles()
 
     hud.init(this)
-    
+
   }
 
   render () {
@@ -260,6 +260,24 @@ class Environment {
         notClicked = false
       }
     })
+  }
+
+  onMouseUp (e) {
+    var closestObject = null
+    var dist = 9
+    _(this.FX).forEach((FX) => {
+      var newDist = vmath.distSquared(FX.widget.position,this.camera.position)
+      if (newDist<dist) {
+        closestObject = FX
+        dist = newDist
+      }
+    })
+
+    if (closestObject) {
+      var knobVals = closestObject.knobs.map((k) => {return k.getValue()})
+      closestObject.turn(knobVals)
+      console.log('meow')
+    }
   }
 
 

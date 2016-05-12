@@ -11,6 +11,12 @@ module.exports =
       bypass: 0
     })
 
+    chorus.turn = function (p) {
+      chorus.rate = p[0]
+      chorus.feedback = p[1]
+      chorus.delay = p[2]
+    }
+
     chorus.knobKeys = [
       {name:'rate',value:1.5,min:0.01,max:8},
       {name:'feedback',value:0.2,min:0,max:1.1},
@@ -25,6 +31,14 @@ module.exports =
       cutoff: 2000,
       bypass: 0
     })
+
+    delay.turn = function (p) {
+      delay.wetLevel = p[0]
+      delay.feedback = p[1]
+      delay.delayTime  = p[2]
+      delay.dryLevel = p[3]
+      delay.cutoff = p[4]
+    }
 
     delay.knobKeys = [
       {name:'wet',value:0.25,min:0,max:1.1},
@@ -52,6 +66,13 @@ module.exports =
       {name:'mod',value:700,min:500,max:1500},
     ]
 
+    phaser.turn = function (p) {
+      phaser.rate = p[0]
+      phaser.depth = p[1]
+      phaser.feedback  = p[2]
+      phaser.stereoPhase = p[3]
+      phaser.baseModulationFrequency = p[4]
+    }
 
     //TODO:destroy all overdrive
     // var overdrive = new tuna.Overdrive({
@@ -81,6 +102,14 @@ module.exports =
       {name:'knee',value:5,min:0,max:40},
     ]
 
+    compressor.turn = function (p) {
+      compressor.threshold = p[0]
+      compressor.makeupGain = p[1]
+      compressor.attack  = p[2]
+      compressor.release = p[3]
+      compressor.knee = p[4]
+    }
+
     //TODO:figure out something to do with this
   //   var convolver = new tuna.Convolver({
   //     highCut: 22050,                         //20 to 22050
@@ -106,6 +135,12 @@ module.exports =
     {name:'gain',value:1.5,min:-40,max:40},
   ]
 
+  filter.turn = function (p) {
+    filter.frequency = p[0]
+    filter.Q = p[1]
+    filter.gain  = p[2]
+  }
+
   // var cabinet = new tuna.Cabinet({
   //   makeupGain: 1,                                 //0 to 20
   //   impulsePath: "impulses/impulse_guitar.wav",    //path to your speaker impulse
@@ -126,6 +161,14 @@ module.exports =
     {name:'phase',value:0,min:0,max:180},
   ]
 
+
+    tremolo.turn = function (p) {
+      tremolo.intensity = p[0]
+      tremolo.rate = p[1]
+      tremolo.phase  = p[2]
+    }
+
+
   var wahwah = new tuna.WahWah({
       automode: true,                //true/false
       baseFrequency: 0.5,            //0 to 1
@@ -144,6 +187,15 @@ module.exports =
     {name:'sensitivity',value:0.5,min:-1,max:1},
   ]
 
+    wahwah.turn = function (p) {
+      wahwah.baseFrequency = p[0]
+      wahwah.excursionOctaves = p[1]
+      wahwah.sweep  = p[2]
+      wahwah.resonance = p[3]
+      wahwah.sensitivity = p[4]
+
+    }
+
 
 
   var moog = new tuna.MoogFilter({
@@ -151,6 +203,11 @@ module.exports =
       resonance: 3.5,   //0 to 4
       bufferSize: 4096  //256 to 16384
   })
+
+  moog.turn = function (p) {
+    moog.cutoff = p[0]
+    moog.resonance = p[1]
+  }
 
   moog.knobKeys = [
     {name:'cutoff',value:0.065,min:0,max:1},
@@ -164,6 +221,13 @@ module.exports =
       delayTimeLeft: 150, //1 to 10000 (milliseconds)
       delayTimeRight: 200 //1 to 10000 (milliseconds)
   })
+
+  pingPongDelay.turn = function (p) {
+    pingPongDelay.wetLevel = p[0]
+    pingPongDelay.feedback = p[1]
+    pingPongDelay.delayTimeRight = p[2]
+    pingPongDelay.delayTimeLeft = p[3]
+  }
 
   pingPongDelay.knobKeys = [
     {name:'wet',value:0.5,min:0,max:1},
