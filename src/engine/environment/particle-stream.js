@@ -5,7 +5,7 @@ import vmath from './services/vector-math.js'
 class ParticleStream {
 
   constructor (source,to,texture,context) {
-    var particles = 2000
+    var particles = 1000
 
     var geometry = new THREE.Geometry()
     for (var i = 0; i<particles; i++){
