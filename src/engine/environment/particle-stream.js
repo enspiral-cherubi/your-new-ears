@@ -79,6 +79,14 @@ class ParticleStream {
       this.disconnecting = true
   }
 
+  explode () {
+    if (this.analyser.barkScaleFrequencyData().overallAmplitude > 120) {
+      this.disconnecting = true
+      return true
+    } else {
+      return false
+    }
+  }
 
 
 
