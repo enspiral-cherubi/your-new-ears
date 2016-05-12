@@ -1,0 +1,54 @@
+html, body {
+  position: relative;
+  height: 100%;
+  margin: 0;
+  font-family: sans-serif;
+}
+
+#three-canvas {
+  position: fixed;
+  height: 100%;
+  width: 100%;
+}
+
+/* loading screen */
+
+#loading-screen {
+  position: fixed;
+  width: 100%;
+  height: 100%;
+  background: white;
+  z-index: 1000;
+}
+
+#loading-msg {
+  position: relative;
+  top: 50%;
+  transform: translateY(-50%);
+  text-align: center;
+  letter-spacing: 3px;
+  font-size: 18px;
+  font-weight: 300;
+}
+
+#effect-label {
+  position: absolute;
+  bottom: 5px;
+  right: 15px;
+  z-index: 1000;
+}
+
+#warning {
+  position: absolute;
+  top: 5px;
+  right: 15px;
+  z-index: 1000;
+  opacity: 0.1;
+}
+
+#knob-container {
+  position: absolute;
+  bottom: 5px;
+  left: 15px;
+  z-index: 1000;
+}
