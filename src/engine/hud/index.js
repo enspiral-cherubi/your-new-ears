@@ -7,7 +7,7 @@ var hud = {
     _(env.FX).forEach((FX) => {
       FX.knobs = makeKnobs(FX.knobKeys)
       FX.knobs.forEach((k) => {
-        $('body').append(k)
+        $('div.knob-container').append(k)
       })
     })
   },

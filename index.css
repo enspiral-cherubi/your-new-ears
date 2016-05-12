@@ -45,3 +45,10 @@ html, body {
   z-index: 1000;
   opacity: 0.1;
 }
+
+#knob-container {
+  position: absolute;
+  bottom: 5px;
+  left: 15px;
+  z-index: 1000;
+}
