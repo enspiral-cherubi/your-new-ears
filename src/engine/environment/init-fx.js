@@ -11,11 +11,17 @@ module.exports =
       bypass: 0
     })
 
-    chorus.knob = function(ra,fe,de,dont,use){
-      chorus.rate = 8*ch+0.01
-      chorus.feedback = 1.1*fe
-      chorus.delay = de
+    chorus.turn = function (p) {
+      chorus.rate = p[0]
+      chorus.feedback = p[1]
+      chorus.delay = p[2]
     }
+
+    chorus.knobKeys = [
+      {name:'rate',value:1.5,min:0.01,max:8},
+      {name:'feedback',value:0.2,min:0,max:1.1},
+      {name:'delay',value:0.0045,min:0,max:1}
+    ]
 
     var delay = new tuna.Delay({
       feedback: 0.45,
@@ -26,13 +32,22 @@ module.exports =
       bypass: 0
     })
 
-    delay.knob = function (fe,de,we,dr,cu){
-      delay.feedback = 1.1*fe
-      delay.delayTime = 2000*de
-      delay.wetLevel = 1.1*we
-      delay.dryLevel = 1.1*dr
-      delay.cutoff = 20000*cu+20
+    delay.turn = function (p) {
+      delay.wetLevel = p[0]
+      delay.feedback = p[1]
+      delay.delayTime  = p[2]
+      delay.dryLevel = p[3]
+      delay.cutoff = p[4]
     }
+
+    delay.knobKeys = [
+      {name:'wet',value:0.25,min:0,max:1.1},
+      {name:'feedback',value:0.45,min:0,max:1.1},
+      {name:'time',value:150,min:0,max:2000},
+      {name:'dry',value:1,min:0,max:1.1},
+      {name:'cutoff',value:2000,min:20,max:20000}
+    ]
+
 
     var phaser = new tuna.Phaser({
       rate: 1.2,                     //0.01 to 8 is a decent range, but higher values are possible
@@ -43,13 +58,22 @@ module.exports =
       bypass: 0
     })
 
-    phaser.knob = function (ra,de,fe,st,ba) {
-      phaser.rate = 8*ra+0.01
-      phaser.depth = de
-      phaser.feedback = 1.1*fe
-      phaser.stereoPhase = 180*st
-      phaser.ba = 1000*ba + 500
+    phaser.knobKeys = [
+      {name:'rate',value:1.2,min:0.01,max:11},
+      {name:'depth',value:0.3,min:0,max:1},
+      {name:'feedback',value:0.2,min:0,max:1.1},
+      {name:'phase',value:30,min:30,max:180},
+      {name:'mod',value:700,min:500,max:1500},
+    ]
+
+    phaser.turn = function (p) {
+      phaser.rate = p[0]
+      phaser.depth = p[1]
+      phaser.feedback  = p[2]
+      phaser.stereoPhase = p[3]
+      phaser.baseModulationFrequency = p[4]
     }
+
     //TODO:destroy all overdrive
     // var overdrive = new tuna.Overdrive({
     //   outputGain: 0.5,         //0 to 1+
@@ -70,12 +94,20 @@ module.exports =
       bypass: 0
     })
 
-    compressor.knob = function (th,at,re,ra,kn) {
-      compressor.threshold = -100*th
-      compressor.attack = 1000*at
-      compressor.release = 3000*re
-      compressor.ratio = 19*ra+1
-      compressor.knee = 40*kn
+    compressor.knobKeys = [
+      {name:'thresh',value:-0.5,min:-100,max:0},
+      {name:'gain',value:1,min:0,max:12},
+      {name:'attack',value:1,min:0,max:1000},
+      {name:'release',value:0,min:0,max:3000},
+      {name:'knee',value:5,min:0,max:40},
+    ]
+
+    compressor.turn = function (p) {
+      compressor.threshold = p[0]
+      compressor.makeupGain = p[1]
+      compressor.attack  = p[2]
+      compressor.release = p[3]
+      compressor.knee = p[4]
     }
 
     //TODO:figure out something to do with this
@@ -97,10 +129,16 @@ module.exports =
       bypass: 0
   })
 
-  filter.knob = function (fr,q,ga,no,nope) {
-    filter.frequency = fr*22030+20
-    filter.Q = q*100+0.001
-    filter.ga = 80*ga-40
+  filter.knobKeys = [
+    {name:'freq',value:440,min:20,max:20000},
+    {name:'Q',value:1.5,min:0.001,max:100},
+    {name:'gain',value:1.5,min:-40,max:40},
+  ]
+
+  filter.turn = function (p) {
+    filter.frequency = p[0]
+    filter.Q = p[1]
+    filter.gain  = p[2]
   }
 
   // var cabinet = new tuna.Cabinet({
@@ -117,11 +155,19 @@ module.exports =
       bypass: 0
   })
 
-  tremolo.knob = function(int,ra,st,ohno,never){
-    tremolo.intensity = int
-    tremolo.rate = 8*ra+0.001
-    tremolo.stereoPhase = st*180
-  }
+  tremolo.knobKeys = [
+    {name:'intensity',value:0.3,min:0,max:1},
+    {name:'rate',value:4,min:0.01,max:8},
+    {name:'phase',value:0,min:0,max:180},
+  ]
+
+
+    tremolo.turn = function (p) {
+      tremolo.intensity = p[0]
+      tremolo.rate = p[1]
+      tremolo.phase  = p[2]
+    }
+
 
   var wahwah = new tuna.WahWah({
       automode: true,                //true/false
@@ -133,13 +179,23 @@ module.exports =
       bypass: 0
   })
 
-  wahwah.knob = function (ba,ex,sw,re,se){
-    wahwah.baseFrequency = ba
-    wahwah.excursionOctaves = 6*ex
-    wahwah.sweep = sw
-    wahwah.resonance = 99*re+1
-    wahwah.sensitivity = 2*se-1
-  }
+  wahwah.knobKeys = [
+    {name:'freq',value:0.5,min:0,max:1},
+    {name:'octaves',value:2,min:1,max:6},
+    {name:'sweep',value:0.2,min:0,max:1},
+    {name:'resonance',value:10,min:1,max:100},
+    {name:'sensitivity',value:0.5,min:-1,max:1},
+  ]
+
+    wahwah.turn = function (p) {
+      wahwah.baseFrequency = p[0]
+      wahwah.excursionOctaves = p[1]
+      wahwah.sweep  = p[2]
+      wahwah.resonance = p[3]
+      wahwah.sensitivity = p[4]
+
+    }
+
 
 
   var moog = new tuna.MoogFilter({
@@ -148,10 +204,16 @@ module.exports =
       bufferSize: 4096  //256 to 16384
   })
 
-  moog.knob = function (cu,re,bushi,nyet,nein){
-    moog.cutoff = cu
-    moog.resonance = 4*re
+  moog.turn = function (p) {
+    moog.cutoff = p[0]
+    moog.resonance = p[1]
   }
+
+  moog.knobKeys = [
+    {name:'cutoff',value:0.065,min:0,max:1},
+    {name:'resonance',value:3.5,min:0,max:4},
+  ]
+
 
   var pingPongDelay = new tuna.PingPongDelay({
       wetLevel: 0.5, //0 to 1
@@ -160,12 +222,20 @@ module.exports =
       delayTimeRight: 200 //1 to 10000 (milliseconds)
   })
 
-  pingPongDelay.knob = function (we,fe,dl,dr,NO){
-    pingPongDelay.wetLevel = we
-    pingPongDelay.feedback = fe
-    pingPongDelay.delayTimeLeft = l*9999+1
-    pingPongDelay.delayTimeRight = r*9999+1
+  pingPongDelay.turn = function (p) {
+    pingPongDelay.wetLevel = p[0]
+    pingPongDelay.feedback = p[1]
+    pingPongDelay.delayTimeRight = p[2]
+    pingPongDelay.delayTimeLeft = p[3]
   }
+
+  pingPongDelay.knobKeys = [
+    {name:'wet',value:0.5,min:0,max:1},
+    {name:'feedback',value:0.3,min:0,max:1},
+    {name:'delayR',value:150,min:1,max:10000},
+    {name:'delayL',value:200,min:1,max:10000},
+
+  ]
 
   // var bitcrusher = new tuna.Bitcrusher({
   //     bits: 4,          //1 to 16

@@ -14,11 +14,15 @@ import ParticleStream from './particle-stream.js'
 import loadParticleTexture from './particle-texture-loader'
 var Tuna = require('tunajs')
 var tuna = new Tuna(audioCtx)
+import hud from './../hud'
+import vmath from './services/vector-math.js'
 
 class Environment {
 
 
   constructor () {
+
+
     this.scene = new THREE.Scene()
 
     this.camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.01, 1000)
@@ -46,53 +50,46 @@ class Environment {
     this._makeWidgets()
     this.particleTexture = loadParticleTexture()
     this._makeParticles()
+
+    hud.init(this)
+
   }
 
   render () {
+
     this.barkScaleFrequencyData = this.analyser.barkScaleFrequencyData()
-    for (var i = 0; i < 24; i++){
-      var amplitude = Math.sin(this.barkScaleFrequencyData.frequencies[i])
-      this.analyserGeometry.vertices[2*i].add(new THREE.Vector3((Math.random()-0.5)*amplitude,
-      (Math.random()-0.5)*amplitude,
-      (Math.random()-0.5)*amplitude))
-      this.analyserGeometry.vertices[2*i].multiplyScalar(0.99)
-    }
-    this.analyserGeometry.verticesNeedUpdate = true
 
+    this.updateAnalyser()
 
-    //find intersections
-    this.camera.lookAt(this.scene.position)
-    this.camera.updateMatrixWorld()
-    this.raycaster.setFromCamera(this.mouse,this.camera)
-    var intersects = this.raycaster.intersectObjects(this.scene.children)
-    intersects.forEach(function (i) {
-      if (i.object.clickable){
-        i.object.rotation.x += .01
-        i.object.rotation.y += .01
-      }
-    })
+    this.rotateSelections()
 
-    if (this.clicked) {
-      this.clicked.rotation.x -= 0.1
-      this.clicked.rotation.y -= 0.1
-    }
+    this.updateParticleStreams()
 
-    _(this.FX).forEach((FX) => {
-      FX.widget.particleStreams.forEach( (ps) => {
-        ps.updateParticles()
-      })
-      if (FX.widget.growing>0) {
-        var growing = FX.widget.growing
-        FX.widget.scale.set(1+growing/50,1+growing/50,1+growing/50)
-        FX.widget.growing-=1
-      }
-    })
-    this.sourceSink.particleStreams.forEach( (ps) => {ps.updateParticles()})
+    this.swell()
 
-
+    this.updatehud()
 
     this.renderer.render(this.scene, this.camera)
   }
+
+  updatehud () {
+    var closestObject = null
+    var dist = 9
+    _(this.FX).forEach((FX) => {
+      var newDist = vmath.distSquared(FX.widget.position,this.camera.position)
+      if (newDist<dist) {
+        closestObject = FX
+        dist = newDist
+      } else {
+        hud.hideControls(FX)
+      }
+    })
+
+    if (closestObject) {
+      hud.showControls(closestObject)
+    }
+  }
+
 
   // 'private'
 
@@ -265,6 +262,24 @@ class Environment {
     })
   }
 
+  onMouseUp (e) {
+    var closestObject = null
+    var dist = 9
+    _(this.FX).forEach((FX) => {
+      var newDist = vmath.distSquared(FX.widget.position,this.camera.position)
+      if (newDist<dist) {
+        closestObject = FX
+        dist = newDist
+      }
+    })
+
+    if (closestObject) {
+      var knobVals = closestObject.knobs.map((k) => {return k.getValue()})
+      closestObject.turn(knobVals)
+      console.log('meow')
+    }
+  }
+
 
 
   _updateParticles () {
@@ -281,6 +296,60 @@ class Environment {
       }
     })
   }
+
+
+    swell () {
+      _(this.FX).forEach((FX) => {
+        if (FX.widget.growing>0) {
+          var growing = FX.widget.growing
+          FX.widget.scale.set(1+growing/50,1+growing/50,1+growing/50)
+          FX.widget.growing-=1
+        }
+      })
+    }
+
+    updateParticleStreams () {
+      _(this.FX).forEach((FX) => {
+        FX.widget.particleStreams.forEach( (ps) => {
+          ps.updateParticles()
+        })
+      })
+
+      this.sourceSink.particleStreams.forEach( (ps) => {ps.updateParticles()})
+    }
+
+    updateAnalyser () {
+      for (var i = 0; i < 24; i++){
+        var amplitude = Math.sin(this.barkScaleFrequencyData.frequencies[i])
+        this.analyserGeometry.vertices[2*i].add(new THREE.Vector3((Math.random()-0.5)*amplitude,
+        (Math.random()-0.5)*amplitude,
+        (Math.random()-0.5)*amplitude))
+        this.analyserGeometry.vertices[2*i].multiplyScalar(0.99)
+      }
+      this.analyserGeometry.verticesNeedUpdate = true
+    }
+
+    rotateSelections () {
+      //find intersections
+      this.camera.lookAt(this.scene.position)
+      this.camera.updateMatrixWorld()
+      this.raycaster.setFromCamera(this.mouse,this.camera)
+      var intersects = this.raycaster.intersectObjects(this.scene.children)
+      intersects.forEach(function (i) {
+        if (i.object.clickable){
+          i.object.rotation.x += .01
+          i.object.rotation.y += .01
+
+        }
+      })
+
+      if (this.clicked) {
+        this.clicked.rotation.x -= 0.1
+        this.clicked.rotation.y -= 0.1
+      }
+    }
+
+
 
 }
 

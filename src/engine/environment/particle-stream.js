@@ -1,10 +1,11 @@
 import THREE from 'three'
 import webAudioAnalyser2 from 'web-audio-analyser-2'
+import vmath from './services/vector-math.js'
 
 class ParticleStream {
 
   constructor (source,to,texture,context) {
-    var particles = 2000
+    var particles = 1000
 
     var geometry = new THREE.Geometry()
     for (var i = 0; i<particles; i++){
@@ -35,7 +36,7 @@ class ParticleStream {
       this.particles.material.size = 0.1*Math.tanh(this.analyser.barkScaleFrequencyData().overallAmplitude/100)+0.1
       this.particles.geometry.vertices.forEach(  (p) => {
           p.addScaledVector(this.flow(p),0.1)
-          if (this.distSquared(p,this.to.position)<1){
+          if (vmath.distSquared(p,this.to.position)<1){
             //when it gets to the end, put it back
             p.set(( Math.random() - 1/2 ) + this.source.position.x,
             ( Math.random() - 1/2 ) + this.source.position.y,
@@ -62,14 +63,14 @@ class ParticleStream {
     var flow = new THREE.Vector3()
     flow.copy(vector)
     if (this.disconnecting){
-      flow.multiplyScalar(10/this.magSquared(flow))
-      flow.addScaledVector(this.source.position,1/this.distSquared(this.source.position,vector))
-      flow.addScaledVector(this.to.position,1/this.distSquared(this.to.position,vector))
+      flow.multiplyScalar(10/vmath.magSquared(flow))
+      flow.addScaledVector(this.source.position,1/vmath.distSquared(this.source.position,vector))
+      flow.addScaledVector(this.to.position,1/vmath.distSquared(this.to.position,vector))
     } else {
         flow.sub(this.source.position)
-        flow.multiplyScalar(1/this.magSquared(flow))
-        flow.addScaledVector(this.to.position,4/this.distSquared(this.to.position,vector))
-        flow.addScaledVector(vector,-4/this.distSquared(this.to.position,vector))
+        flow.multiplyScalar(1/vmath.magSquared(flow))
+        flow.addScaledVector(this.to.position,4/vmath.distSquared(this.to.position,vector))
+        flow.addScaledVector(vector,-4/vmath.distSquared(this.to.position,vector))
     }
     return flow
   }
@@ -79,16 +80,9 @@ class ParticleStream {
   }
 
 
-  magSquared (vector) {
-    return vector.x*vector.x+vector.y*vector.y+vector.z*vector.z
-  }
 
-  distSquared (v,w) {
-    var diff = new THREE.Vector3()
-    diff.copy(v)
-    diff.sub(w)
-    return this.magSquared(diff)
-  }
+
+
 
 }
 
