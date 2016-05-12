@@ -22,7 +22,6 @@ class Environment {
 
   constructor () {
 
-    hud.init(this)
 
     this.scene = new THREE.Scene()
 
@@ -51,6 +50,9 @@ class Environment {
     this._makeWidgets()
     this.particleTexture = loadParticleTexture()
     this._makeParticles()
+
+    hud.init(this)
+    
   }
 
   render () {

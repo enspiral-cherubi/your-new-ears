@@ -1,22 +1,29 @@
-var controlPanel = require('./control-panel')
+import makeKnobs from './make-knobs.js'
 var $ = require('jquery')
 
 var hud = {
-  controlPanel: controlPanel,
 
   init: function(env) {
-    this.controlPanel.init(env)
+    _(env.FX).forEach((FX) => {
+      FX.knobs = makeKnobs(FX.knobKeys)
+      FX.knobs.forEach((k) => {
+        $('body').append(k)
+      })
+    })
   },
   showControls: function(object) {
-    this.controlPanel.knobs.forEach((k) => {
+
+    object.knobs.forEach((k) => {
       $(k).show()
     })
-    console.log('meow')
+
   },
   hideControls: function(object) {
-    this.controlPanel.knobs.forEach((k) => {
-      $(k).hide()
-    })
+    if (object.knobs) {
+      object.knobs.forEach((k) => {
+        $(k).hide()
+      })
+    }
   }
 }
 
